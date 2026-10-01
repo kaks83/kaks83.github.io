@@ -227,15 +227,40 @@
   }
   nav .nav-cta:hover { background: var(--orange-light); }
 
-  /* HERO */
+  /* HERO — full viewport video + 3D hero */
   .hero {
+    height: 100vh;
     min-height: 100vh;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     text-align: center;
     padding: 100px 20px 60px;
     position: relative;
-    background: radial-gradient(ellipse 80% 60% at 50% 40%, #1A2E5A 0%, #0D1B3E 60%, #080f22 100%);
+    background: #060c1e;
     overflow: hidden;
+  }
+  /* Fullscreen video background */
+  .hero-video-wrap {
+    position: absolute; inset: 0; z-index: 0;
+    overflow: hidden;
+  }
+  .hero-video-wrap canvas {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    display: block;
+  }
+  .hero-video-wrap::after {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 90% 70% at 50% 35%, rgba(13,27,62,0.55) 0%, rgba(8,15,34,0.86) 65%, #080f22 100%);
+  }
+  /* 3D WebGL canvas layer (network / connectivity nodes) */
+  #hero-3d-canvas {
+    position: absolute; inset: 0; z-index: 1;
+    width: 100%; height: 100%;
+    display: block;
+    mix-blend-mode: screen;
+    opacity: 0.9;
   }
   /* Animated signal rings */
   .pulse-rings {
@@ -243,6 +268,7 @@
     top: 50%; left: 50%;
     transform: translate(-50%, -60%);
     pointer-events: none;
+    z-index: 1;
   }
   .ring {
     position: absolute;
@@ -269,9 +295,28 @@
       linear-gradient(90deg, rgba(255,107,0,0.04) 1px, transparent 1px);
     background-size: 60px 60px;
     pointer-events: none;
+    z-index: 1;
   }
 
-  .hero-content { position: relative; z-index: 2; max-width: 820px; }
+  .hero-content { position: relative; z-index: 3; max-width: 820px; }
+  .hero-scroll-cue {
+    position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+    z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    color: var(--text-light); font-family: 'Poppins', sans-serif; font-size: 0.7rem;
+    letter-spacing: 0.15em; text-transform: uppercase; opacity: 0.7;
+    animation: scrollCueFade 2.4s ease-in-out infinite;
+  }
+  .hero-scroll-cue .chevron {
+    width: 18px; height: 18px; border-right: 2px solid var(--orange); border-bottom: 2px solid var(--orange);
+    transform: rotate(45deg);
+  }
+  @keyframes scrollCueFade {
+    0%, 100% { opacity: 0.25; transform: translateX(-50%) translateY(0); }
+    50% { opacity: 0.8; transform: translateX(-50%) translateY(6px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-scroll-cue, .ring { animation: none !important; }
+  }
   .hero-eyebrow {
     display: inline-block;
     background: rgba(255,107,0,0.12);
@@ -654,6 +699,10 @@
 <main id="main-content">
 <!-- HERO -->
 <section class="hero">
+  <div class="hero-video-wrap">
+    <canvas id="hero-motion-canvas" aria-hidden="true"></canvas>
+  </div>
+  <canvas id="hero-3d-canvas" aria-hidden="true"></canvas>
   <div class="pulse-rings">
     <div class="ring"></div>
     <div class="ring"></div>
@@ -686,6 +735,10 @@
         <div class="stat-label">MoMo · Airtel · Cash</div>
       </div>
     </div>
+  </div>
+  <div class="hero-scroll-cue">
+    <span>Scroll</span>
+    <div class="chevron"></div>
   </div>
 </section>
 
@@ -1275,6 +1328,151 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
     </div>
   </div>
 </footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+  // ---------- Layer 1: cinematic motion background (canvas 2D) ----------
+  var mCanvas = document.getElementById('hero-motion-canvas');
+  var mCtx = mCanvas.getContext('2d');
+  var heroEl = document.querySelector('.hero');
+
+  function resizeMotion(){
+    mCanvas.width = heroEl.clientWidth;
+    mCanvas.height = heroEl.clientHeight;
+  }
+  resizeMotion();
+  window.addEventListener('resize', resizeMotion);
+
+  var t0 = Date.now();
+  function drawMotion(){
+    var w = mCanvas.width, h = mCanvas.height;
+    var t = (Date.now() - t0) / 1000;
+    mCtx.clearRect(0, 0, w, h);
+
+    // Deep navy base wash
+    var base = mCtx.createLinearGradient(0, 0, w, h);
+    base.addColorStop(0, '#0d1b3e');
+    base.addColorStop(1, '#060c1e');
+    mCtx.fillStyle = base;
+    mCtx.fillRect(0, 0, w, h);
+
+    // Slow-drifting light blobs (simulates cinematic video motion)
+    var blobs = [
+      { cx: 0.25 + 0.08*Math.sin(t*0.12), cy: 0.30 + 0.06*Math.cos(t*0.09), r: 0.55, c: 'rgba(255,107,0,0.22)' },
+      { cx: 0.75 + 0.07*Math.cos(t*0.10), cy: 0.65 + 0.07*Math.sin(t*0.11), r: 0.50, c: 'rgba(26,46,90,0.55)' },
+      { cx: 0.50 + 0.10*Math.sin(t*0.07+1.5), cy: 0.20 + 0.05*Math.cos(t*0.13), r: 0.40, c: 'rgba(255,107,0,0.12)' }
+    ];
+    blobs.forEach(function(b){
+      var gx = b.cx * w, gy = b.cy * h, gr = b.r * Math.max(w,h);
+      var g = mCtx.createRadialGradient(gx, gy, 0, gx, gy, gr);
+      g.addColorStop(0, b.c);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      mCtx.fillStyle = g;
+      mCtx.fillRect(0, 0, w, h);
+    });
+
+    requestAnimationFrame(drawMotion);
+  }
+  drawMotion();
+
+  // ---------- Layer 2: 3D connectivity network (three.js) ----------
+  var canvas3d = document.getElementById('hero-3d-canvas');
+  var renderer, scene, camera, pointsMesh, lineSegs;
+  var mouseX = 0, mouseY = 0;
+
+  function init3D(){
+    var w = heroEl.clientWidth, h = heroEl.clientHeight;
+    renderer = new THREE.WebGLRenderer({ canvas: canvas3d, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setSize(w, h);
+
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(55, w / h, 0.1, 2000);
+    camera.position.z = 420;
+
+    var NODE_COUNT = 70;
+    var positions = new Float32Array(NODE_COUNT * 3);
+    var nodeObjs = [];
+    for (var i = 0; i < NODE_COUNT; i++) {
+      var x = (Math.random() - 0.5) * 700;
+      var y = (Math.random() - 0.5) * 420;
+      var z = (Math.random() - 0.5) * 400;
+      positions[i*3] = x; positions[i*3+1] = y; positions[i*3+2] = z;
+      nodeObjs.push({ x: x, y: y, z: z, vx: (Math.random()-0.5)*0.15, vy: (Math.random()-0.5)*0.15, vz: (Math.random()-0.5)*0.15 });
+    }
+
+    var geom = new THREE.BufferGeometry();
+    geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    var mat = new THREE.PointsMaterial({ color: 0xff8a33, size: 4.5, transparent: true, opacity: 0.9, sizeAttenuation: true });
+    pointsMesh = new THREE.Points(geom, mat);
+    scene.add(pointsMesh);
+
+    var lineGeom = new THREE.BufferGeometry();
+    var lineMat = new THREE.LineBasicMaterial({ color: 0x6fa8ff, transparent: true, opacity: 0.18 });
+    lineSegs = new THREE.LineSegments(lineGeom, lineMat);
+    scene.add(lineSegs);
+
+    function updateLines(){
+      var maxDist = 130;
+      var pts = [];
+      for (var i = 0; i < nodeObjs.length; i++) {
+        for (var j = i + 1; j < nodeObjs.length; j++) {
+          var a = nodeObjs[i], b = nodeObjs[j];
+          var dx = a.x-b.x, dy = a.y-b.y, dz = a.z-b.z;
+          var d = Math.sqrt(dx*dx+dy*dy+dz*dz);
+          if (d < maxDist) {
+            pts.push(a.x, a.y, a.z, b.x, b.y, b.z);
+          }
+        }
+      }
+      lineGeom.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+    }
+    updateLines();
+
+    heroEl.addEventListener('mousemove', function(e){
+      var rect = heroEl.getBoundingClientRect();
+      mouseX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+      mouseY = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    });
+
+    var frame = 0;
+    function animate(){
+      frame++;
+      for (var i = 0; i < nodeObjs.length; i++) {
+        var n = nodeObjs[i];
+        n.x += n.vx; n.y += n.vy; n.z += n.vz;
+        if (Math.abs(n.x) > 360) n.vx *= -1;
+        if (Math.abs(n.y) > 220) n.vy *= -1;
+        if (Math.abs(n.z) > 220) n.vz *= -1;
+        positions[i*3] = n.x; positions[i*3+1] = n.y; positions[i*3+2] = n.z;
+      }
+      pointsMesh.geometry.attributes.position.needsUpdate = true;
+      if (frame % 3 === 0) updateLines();
+
+      scene.rotation.y += 0.0009;
+      camera.position.x += (mouseX * 60 - camera.position.x) * 0.02;
+      camera.position.y += (-mouseY * 40 - camera.position.y) * 0.02;
+      camera.lookAt(scene.position);
+
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    window.addEventListener('resize', function(){
+      var nw = heroEl.clientWidth, nh = heroEl.clientHeight;
+      camera.aspect = nw / nh;
+      camera.updateProjectionMatrix();
+      renderer.setSize(nw, nh);
+    });
+  }
+
+  if (window.THREE) {
+    init3D();
+  }
+})();
+</script>
 
 </body>
 </html>
