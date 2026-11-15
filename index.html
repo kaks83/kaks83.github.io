@@ -7,12 +7,12 @@
   <meta name="description" content="BuzzSpot WiFi is aligning with government guidelines to bring you a better, fully compliant hotspot experience. We'll be back soon.">
   
   <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><rect width='200' height='200' fill='%230D1B3E'/><path d='M 50 90 A 60 60 0 0 1 170 90' fill='none' stroke='%23FF6B00' stroke-width='14' stroke-linecap='round'/><path d='M 70 110 A 40 40 0 0 1 150 110' fill='none' stroke='%23FF6B00' stroke-width='14' stroke-linecap='round'/><path d='M 50 130 L 80 130 C 100 130 110 145 110 160 C 110 175 100 190 80 190 L 50 190 L 50 130 Z M 70 150 L 80 150 C 90 150 95 155 95 160 C 95 165 90 170 80 170 L 70 170 Z' fill='%23FFFFFF'/></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><rect width='200' height='200' fill='%230D1B3E'/><path d='M 50 90 A 60 60 0 0 1 170 90' fill='none' stroke='%23FF6B00' stroke-width='14' stroke-linecap='round'/><path d='M 70 110 A 40 40 0 0 1 150 110' fill='none' stroke='%23FF6B00' stroke-width='14' stroke-linecap='round'/></svg>">
   
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   
   <style>
     /* ── Global reset & base ── */
@@ -103,20 +103,71 @@
       }
     }
 
-    /* Logo lockup */
-    .logo-mark {
+    /* ── NEW LOGO CSS ── */
+    .logo-container {
       display: flex;
-      justify-content: center;
-      margin-bottom: 2.5rem;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 2rem;
     }
 
-    .logo-mark .logo-svg {
-      width: 100%;
-      max-width: 380px;
-      height: auto;
-      display: block;
-      filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.55));
+    .logo-top-row {
+      display: flex;
+      align-items: baseline;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      font-size: 48px; /* Size reduced */
+      letter-spacing: -1.5px;
+      line-height: 1;
     }
+
+    .logo-top-row .buzz {
+      color: var(--white);
+    }
+
+    .logo-top-row .spot {
+      color: var(--orange);
+    }
+
+    .logo-bottom-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .logo-bottom-row .line {
+      width: 45px;
+      height: 3px;
+      background-color: var(--orange);
+      border-radius: 3px;
+    }
+
+    .logo-bottom-row .wifi-text {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--white);
+      letter-spacing: 14px;
+      text-indent: 14px; /* Offsets letter-spacing on last letter for perfect centering */
+      line-height: 1;
+    }
+
+    @media (max-width: 480px) {
+      .logo-top-row {
+        font-size: 36px;
+      }
+      .logo-bottom-row .line {
+        width: 30px;
+      }
+      .logo-bottom-row .wifi-text {
+        font-size: 16px;
+        letter-spacing: 10px;
+        text-indent: 10px;
+      }
+    }
+    /* ── END LOGO CSS ── */
 
     /* Badge */
     .badge {
@@ -460,9 +511,6 @@
       .btn-submit {
         width: 100%;
       }
-      .logo-mark .logo-svg {
-        max-width: 280px;
-      }
     }
 
     /* Focus visible for accessibility */
@@ -480,53 +528,17 @@
 <body>
   <div class="wip-card" role="main">
     
-    <!-- ── Logo ── -->
-    <div class="logo-mark">
-      <svg class="logo-svg" viewBox="0 0 540 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="BuzzSpot WiFi logo">
-        
-        <!-- WiFi Arcs (Top Left) -->
-        <path d="M 35 52 A 42 42 0 0 1 121 52" fill="none" stroke="#FF6B00" stroke-width="13" stroke-linecap="round"/>
-        <path d="M 52 69 A 25 25 0 0 1 104 69" fill="none" stroke="#FF6B00" stroke-width="13" stroke-linecap="round"/>
-
-        <!-- Logo Mark: Orange Bar + Custom B (White) -->
-        <rect x="35" y="82" width="24" height="66" fill="#FF6B00"/>
-        
-        <path d="M 59 82 
-                 V 148 
-                 H 89.5 
-                 C 104 148 113 140 113 130 
-                 C 113 120 108 115 97 112 
-                 C 105 109 110 103 110 94 
-                 C 110 85 102 82 89 82 
-                 Z 
-                 M 70 92 
-                 H 86 
-                 C 94 92 99 95 99 99 
-                 C 99 104 94 107 86 107 
-                 H 70 
-                 Z 
-                 M 70 116 
-                 H 88 
-                 C 96 116 102 119 102 124 
-                 C 102 130 97 138 87 138 
-                 H 70 
-                 Z" 
-              fill="#FFFFFF"/>
-
-        <!-- Wordmark "Buzz" (White) -->
-        <text x="125" y="128" font-family="'Poppins', sans-serif" font-weight="800" font-size="46" fill="#FFFFFF" letter-spacing="-1">Buzz</text>
-
-        <!-- Wordmark "Spot" (Orange) -->
-        <text x="245" y="128" font-family="'Poppins', sans-serif" font-weight="800" font-size="46" fill="#FF6B00" letter-spacing="-1">Spot</text>
-
-        <!-- "WiFi" Text centered below BuzzSpot -->
-        <text x="255" y="163" text-anchor="middle" font-family="'Poppins', sans-serif" font-weight="700" font-size="20" fill="#FFFFFF" letter-spacing="12">WiFi</text>
-
-        <!-- Flanking orange lines for WiFi -->
-        <line x1="130" y1="156" x2="175" y2="156" stroke="#FF6B00" stroke-width="3" stroke-linecap="round"/>
-        <line x1="335" y1="156" x2="380" y2="156" stroke="#FF6B00" stroke-width="3" stroke-linecap="round"/>
-        
-      </svg>
+    <!-- ── Logo: Clean, precise CSS alignment ── -->
+    <div class="logo-container">
+      <div class="logo-top-row">
+        <span class="buzz">Buzz</span>
+        <span class="spot">Spot</span>
+      </div>
+      <div class="logo-bottom-row">
+        <div class="line"></div>
+        <div class="wifi-text">WiFi</div>
+        <div class="line"></div>
+      </div>
     </div>
 
     <!-- Status badge -->
@@ -556,7 +568,7 @@
       <h2>Drop us a line</h2>
       <p>Have a question, need support, or just want to say hello? Our inbox is still open — we’ll get back to you as soon as we’re back online.</p>
 
-      <!-- Note: _next removed to prevent redirection -->
+      <!-- _next removed to prevent redirection -->
       <form id="contactForm" action="https://formsubmit.co/buzzspotug@gmail.com" method="POST">
         <input type="hidden" name="_subject" value="BuzzSpot WiFi — New message from the website">
         <input type="hidden" name="_captcha" value="false">
